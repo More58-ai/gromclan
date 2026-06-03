@@ -257,15 +257,21 @@
             transform: rotate(90deg) scale(1.05);
         }
         
-        .alliance-close-x {
-            border-color: rgba(255, 118, 117, 0.3);
-            color: var(--beast-color);
+        /* Кнопка закриття альянсу - плавне з'явлення */
+        .modal-close-x.alliance-close-x {
             opacity: 0;
             pointer-events: none;
+            transition: opacity 0.7s ease, transform 0.7s ease;
         }
-        .alliance-close-x:hover {
-            background: rgba(255, 118, 117, 0.15);
-            box-shadow: 0 0 15px rgba(255, 118, 117, 0.4);
+        .modal-close-x.alliance-close-x.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1.1);
+        }
+        .modal-close-x.alliance-close-x.active:hover {
+            transform: scale(1.3) rotate(90deg);
+            box-shadow: 0 0 15px var(--beast-color);
+            color: #fff;
         }
 
         /* КІНЕМАТОГРАФІЧНА МОДАЛКА АЛЬЯНСУ */
@@ -282,21 +288,25 @@
             align-items: center;
             overflow-y: auto !important;
             padding: 50px 40px !important;
+            position: relative;
         }
 
-        /* Лазерна лінія сканування */
+        /* Лазерна лінія сканування - більш плавна, злегка прозора, повторюється */
         .modal-alliance-content::after {
             content: '';
             position: absolute;
             left: 0; width: 100%; height: 8px;
             background: linear-gradient(90deg, transparent, var(--beast-color), transparent);
             box-shadow: 0 0 20px var(--beast-color);
-            opacity: 0;
+            opacity: 0.25;
             pointer-events: none;
             z-index: 15;
+            animation: scanline 1.2s ease-out forwards;
+            animation-iteration-count: infinite;
         }
-        .modal-alliance-content.scanning::after {
-            animation: scanline 0.9s ease-out forwards;
+        .modal-alliance-content:not(.scanning)::after {
+            animation-play-state: paused;
+            opacity: 0;
         }
 
         .alliance-intro-screen {
@@ -494,15 +504,15 @@
                     <div class="team-card beast-leader-card">
                         <div class="avatar-beast-leader">👹</div>
                         <div class="role" style="color: var(--beast-color);">Лідер Beast</div>
-                        <div class="name">ZakharProtsak75</div>
-                        <p class="quote-text">«Гравець-початківець у світі ПВП, проте з хорошим потенціалом, у якого ще все попереду.»</p>
+                        <div class="name">ItzNyphy</div>
+                        <p class="quote-text">«ItzNyphy професільний пвп гравець в якого головна зброя кристали,карти,мейс. Який мріє стати хт 1 в Україні. GG;)»</p>
                     </div>
                     <!-- Заступник Beast -->
                     <div class="team-card citizen-card" style="border-color: rgba(255, 118, 117, 0.15);">
                         <div class="avatar-citizen" style="border-color: var(--beast-color); color: var(--beast-color); animation: pulse-beast 2s infinite;">⚔️</div>
                         <div class="role" style="color: var(--beast-color);">Заступник Beast</div>
-                        <div class="name">Nuphy</div>
-                        <p class="quote-text">«Професійний ПВП гравець, у якого головна зброя — кристали, карти та мейс. GG ;)»</p>
+                        <div class="name">ItzZyr1k</div>
+                        <p class="quote-text">«Гравець початківець у світі ПВП, проте з хорошим потенціалом, у якого ще все попереду.»</p>
                     </div>
                 </div>
                 
@@ -573,22 +583,29 @@
         </div>
 
         <div class="team-grid">
-            <!-- Оновлений житель BoberVasya -->
             <div class="team-card citizen-card">
                 <div class="avatar-citizen">🦫</div>
                 <div class="role" style="color: var(--secondary);">Житель клану</div>
                 <div class="name">BoberVasya</div>
+                <p class="quote-text">«Надійний та працьовитий учасник нашого клану, завжди готовий допомогти.»</p>
             </div>
-            <!-- Оновлений житель Epic_Rock -->
             <div class="team-card citizen-card">
                 <div class="avatar-citizen">🪨</div>
                 <div class="role" style="color: var(--secondary);">Житель клану</div>
                 <div class="name">Murchik</div>
+                <p class="quote-text">«Спокійний та виважений гравець, цінує командну роботу й порядність.»</p>
             </div>
             <div class="team-card citizen-card">
                 <div class="avatar-citizen">🪨</div>
                 <div class="role" style="color: var(--secondary);">Житель клану</div>
                 <div class="name">Ehoslem</div>
+                <p class="quote-text">«Активний дослідник, завжди в пошуках нових можливостей для розвитку.»</p>
+            </div>
+            <div class="team-card citizen-card">
+                <div class="avatar-citizen">🌟</div>
+                <div class="role" style="color: var(--secondary);">Житель клану</div>
+                <div class="name">Dotino</div>
+                <p class="quote-text">«Молодий талант, який приносить у клан свіжі ідеї та ентузіазм.»</p>
             </div>
         </div>
     </section>
@@ -623,9 +640,8 @@
             introScreen.style.animation = 'none';
             mainContent.style.opacity = '0';
             mainContent.style.animation = 'none';
-            
-            closeBtn.style.opacity = '0';
-            closeBtn.style.pointerEvents = 'none';
+
+            closeBtn.classList.remove('active'); // Ховаємо кнопку закриття спочатку
             
             word1.style.opacity = '0';
             word1.style.animation = 'none';
@@ -637,34 +653,31 @@
             setTimeout(() => modal.classList.add('active'), 10);
             document.body.style.overflow = 'hidden';
 
-            // Етап 1: Поява слова "АЛЬЯНС" з ефектом фокусу та масштабного наближення
+            // Етап 1: Поява слова "АЛЬЯНС"
             setTimeout(() => {
-                word1.style.animation = 'introAllianceIn 0.9s cubic-bezier(0.25, 1, 0.5, 1) forwards';
+                word1.style.animation = 'introAllianceIn 1.0s cubic-bezier(0.25, 1, 0.5, 1) forwards';
             }, 300);
 
-            // Етап 2: Спалах слова "ГРІМ // BEAST" под ним з неоновим світінням
+            // Етап 2: Спалах слова "ГРІМ // BEAST"
             setTimeout(() => {
-                word2.style.animation = 'introGromIn 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards';
-            }, 1300);
+                word2.style.animation = 'introGromIn 1.0s cubic-bezier(0.25, 1, 0.5, 1) forwards';
+            }, 1500);
 
             // Етап 3: Розмиття заставки, запуск лазера-сканування та відображення контенту
             setTimeout(() => {
-                introScreen.style.animation = 'introFadeOut 0.7s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards';
-                
+                introScreen.style.animation = 'introFadeOut 0.9s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards';
+
                 setTimeout(() => {
                     introScreen.style.display = 'none';
-                    // Активуємо скан-лінію
                     container.classList.add('scanning');
-                    // М'яко проявляємо основний текст та картки
-                    mainContent.style.animation = 'contentFadeIn 0.9s cubic-bezier(0.25, 1, 0.5, 1) forwards';
-                    
-                    // Кнопка швидкого закриття (хрестик) елегантно вмикається
-                    closeBtn.style.pointerEvents = 'auto';
-                    closeBtn.style.transition = 'opacity 0.5s ease';
-                    closeBtn.style.opacity = '1';
-                }, 700);
+                    mainContent.style.animation = 'contentFadeIn 1.0s cubic-bezier(0.25, 1, 0.5, 1) forwards';
+                    mainContent.style.opacity = '1';
 
-            }, 2900);
+                    // Показуємо кнопку закриття з анімацією
+                    closeBtn.classList.add('active');
+                }, 900);
+
+            }, 3200);
         }
 
         function closeAllModals() { 
